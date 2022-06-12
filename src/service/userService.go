@@ -18,7 +18,6 @@ const (
 )
 
 //增
-
 func CreateRegisterUser(userName string, passWord string) (model.User, error) {
 	//1.Following数据模型准备
 	// 记录一下原始密码(用户登录的密码)
@@ -47,7 +46,6 @@ func CreateRegisterUser(userName string, passWord string) (model.User, error) {
 }
 
 //查
-
 func IsUserExistByName(userName string) bool {
 
 	var userExist = &model.User{}
