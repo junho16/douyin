@@ -26,6 +26,8 @@ func main() {
 	r := gin.Default()
 	controller.InitRouter(r)
 
+	r.Static("/videos", "data/videos")
+
 	//注册路由
 	//r := controller.InitRouter()
 	//启动端口为8080的项目
@@ -33,4 +35,5 @@ func main() {
 	if errRun != nil {
 		return
 	}
+
 }

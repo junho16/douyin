@@ -165,9 +165,10 @@ func UserInfo(c *gin.Context) {
 	//根据user_id查询
 	rawId := c.Query("user_id")
 	userInfoResponse, err := UserInfoService(rawId)
-	fmt.Println(" err " + err.Error())
+
 	//用户不存在返回对应的错误
 	if err != nil {
+		fmt.Println(" err " + err.Error())
 		c.JSON(http.StatusOK, UserInfoResponse{
 			Response: common.Response{
 				StatusCode: 1,
