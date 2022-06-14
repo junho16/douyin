@@ -2,6 +2,7 @@ package controller
 
 import (
 	"douyin/src/common"
+	"douyin/src/model"
 	"douyin/src/service"
 	"douyin/src/token"
 	"fmt"
@@ -38,6 +39,30 @@ type DouyinFeedResponse struct {
 type DouyinFeedNoVideoResponse struct {
 	common.Response
 	NextTime uint `json:"next_time"`
+}
+
+type VideoListResponse struct {
+	common.Response
+	VideoList []ReturnVideo `json:"video_list"`
+}
+
+type ReturnAuthor struct {
+	AuthorId      uint   `json:"author_id"`
+	Name          string `json:"name"`
+	FollowCount   uint   `json:"follow_count"`
+	FollowerCount uint   `json:"follower_count"`
+	IsFollow      bool   `json:"is_follow"`
+}
+
+type ReturnVideo struct {
+	VideoId       uint         `json:"video_id"`
+	Author        ReturnAuthor `json:"author"`
+	PlayUrl       string       `json:"play_url"`
+	CoverUrl      string       `json:"cover_url"`
+	FavoriteCount uint         `json:"favorite_count"`
+	CommentCount  uint         `json:"comment_count"`
+	IsFavorite    bool         `json:"is_favorite"`
+	Title         string       `json:"title"`
 }
 
 func FeedVideos(c *gin.Context) {
@@ -114,6 +139,72 @@ func FeedVideos(c *gin.Context) {
 		c.JSON(http.StatusOK, DouyinFeedNoVideoResponse{
 			Response: common.Response{StatusCode: 0}, //成功
 			NextTime: 0,                              //重新循环
+		})
+	}
+}
+
+func PublishList(c *gin.Context) { //获取列表的方法
+	//1.中间件鉴权token
+	getHostId, _ := c.Get("user_id")
+	var HostId uint
+	if v, ok := getHostId.(uint); ok {
+		HostId = v
+	}
+	//2.查询要查看用户的id的所有视频，返回页面
+	getGuestId := c.Query("user_id")
+	id, _ := strconv.Atoi(getGuestId)
+	GuestId := uint(id)
+
+	//根据用户id查找用户
+	getUser, err := service.GetUser(GuestId)
+	if err != nil {
+		c.JSON(http.StatusOK, common.Response{
+			StatusCode: 1,
+			StatusMsg:  "Not find this person.",
+		})
+		c.Abort()
+		return
+	}
+
+	returnAuthor := ReturnAuthor{
+		AuthorId:      GuestId,
+		Name:          getUser.Name,
+		FollowCount:   getUser.FollowCount,
+		FollowerCount: getUser.FollowerCount,
+		IsFollow:      service.IsFollowing(HostId, GuestId),
+	}
+	//根据用户id查找 所有相关视频信息
+	var videoList []model.Video
+	videoList = service.GetVideoList(GuestId)
+	if len(videoList) == 0 {
+		c.JSON(http.StatusOK, VideoListResponse{
+			Response: common.Response{
+				StatusCode: 1,
+				StatusMsg:  "null",
+			},
+			VideoList: nil,
+		})
+	} else { //需要展示的列表信息
+		var returnVideoList []ReturnVideo
+		for i := 0; i < len(videoList); i++ {
+			returnVideo := ReturnVideo{
+				VideoId:       videoList[i].ID,
+				Author:        returnAuthor,
+				PlayUrl:       videoList[i].PlayUrl,
+				CoverUrl:      videoList[i].CoverUrl,
+				FavoriteCount: videoList[i].FavoriteCount,
+				CommentCount:  videoList[i].CommentCount,
+				IsFavorite:    service.CheckFavorite(HostId, videoList[i].ID),
+				Title:         videoList[i].Title,
+			}
+			returnVideoList = append(returnVideoList, returnVideo)
+		}
+		c.JSON(http.StatusOK, VideoListResponse{
+			Response: common.Response{
+				StatusCode: 0,
+				StatusMsg:  "success",
+			},
+			VideoList: returnVideoList,
 		})
 	}
 }

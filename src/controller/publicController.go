@@ -57,7 +57,7 @@ func Publish(c *gin.Context) {
 		return
 	}
 	var playUrl string
-	playUrl = "http://" + ip + ":8080/" + "/data/videos/" + finalName
+	playUrl = "http://" + ip + ":8080/" + "data/videos/" + finalName
 	//封面url已写死
 	var coverUrl string
 	coverUrl = "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg"

@@ -12,19 +12,19 @@ func InitRouter(r *gin.Engine) {
 	apiRouter := r.Group("/douyin")
 
 	// basic apis
-	apiRouter.GET("/feed/", FeedVideos)
+	apiRouter.GET("/feed/", token.JwtMiddleware(), FeedVideos)
 	apiRouter.GET("/user/", token.JwtMiddleware(), UserInfo)
 	apiRouter.POST("/user/register/", UserRegister)
 	apiRouter.POST("/user/login/", UserLogin)
 	apiRouter.POST("/publish/action/", token.JwtMiddleware(), Publish)
-	//apiRouter.GET("/publish/list/", PublishList)
-	//
+	apiRouter.GET("/publish/list/", token.JwtMiddleware(), PublishList)
+
 	//// extra apis - I
-	//apiRouter.POST("/favorite/action/", controller.FavoriteAction)
-	//apiRouter.GET("/favorite/list/", controller.FavoriteList)
-	//apiRouter.POST("/comment/action/", controller.CommentAction)
-	//apiRouter.GET("/comment/list/", controller.CommentList)
-	//
+	apiRouter.POST("/favorite/action/", token.JwtMiddleware(), FavoriteAction)
+	apiRouter.GET("/favorite/list/", token.JwtMiddleware(), FavoriteList)
+	apiRouter.POST("/comment/action/", token.JwtMiddleware(), CommentAction)
+	apiRouter.GET("/comment/list/", token.JwtMiddleware(), CommentList)
+
 	//// extra apis - II
 	//apiRouter.POST("/relation/action/", controller.RelationAction)
 	//apiRouter.GET("/relation/follow/list/", controller.FollowList)

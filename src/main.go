@@ -26,7 +26,7 @@ func main() {
 	r := gin.Default()
 	controller.InitRouter(r)
 
-	r.Static("/videos", "data/videos")
+	r.Static("/data/videos", "data/videos")
 
 	//注册路由
 	//r := controller.InitRouter()

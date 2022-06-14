@@ -4,6 +4,7 @@ import (
 	"douyin/src/dao"
 	"douyin/src/model"
 	"fmt"
+	"github.com/jinzhu/gorm"
 	"time"
 )
 
@@ -22,4 +23,38 @@ func FeedGet(lastTime int64) ([]model.Video, error) {
 	VideoList = make([]model.Video, 0)
 	err := dao.SqlSession.Table("videos").Where("created_at < ?", strTime).Order("created_at desc").Limit(returnVideoNum).Find(&VideoList).Error
 	return VideoList, err
+}
+
+// GetVideoList 根据用户id查找 所有与该用户相关视频信息
+func GetVideoList(userId uint) []model.Video {
+	var videoList []model.Video
+	dao.SqlSession.Table("videos").Where("author_id=?", userId).Find(&videoList)
+	return videoList
+}
+
+// AddCommentCount 添加评论数量
+func AddCommentCount(videoId uint) error {
+
+	if err := dao.SqlSession.Table("videos").Where("id = ?", videoId).Update("comment_count", gorm.Expr("comment_count + 1")).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetVideoAuthor 获取视频作者信息
+func GetVideoAuthor(videoId uint) (uint, error) {
+	var video model.Video
+	if err := dao.SqlSession.Table("videos").Where("id = ?", videoId).Find(&video).Error; err != nil {
+		return video.ID, err
+	}
+	return video.AuthorId, nil
+}
+
+// ReduceCommentCoun 锐减评论数量
+func ReduceCommentCount(videoId uint) error {
+
+	if err := dao.SqlSession.Table("videos").Where("id = ?", videoId).Update("comment_count", gorm.Expr("comment_count - 1")).Error; err != nil {
+		return err
+	}
+	return nil
 }
