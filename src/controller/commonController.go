@@ -5,6 +5,7 @@ import (
 	"douyin/src/dao"
 	"douyin/src/model"
 	"douyin/src/service"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"net/http"
@@ -168,8 +169,9 @@ func CommentList(c *gin.Context) {
 		return
 	}
 
-	var responseCommentList []CommentResponse
+	var responseCommentList = make([]CommentResponse, 0)
 	for i := 0; i < len(commentList); i++ {
+		fmt.Printf("%+v\n", commentList[i])
 		getUser, err1 := service.GetUser(commentList[i].UserId)
 
 		if err1 != nil {
@@ -180,7 +182,7 @@ func CommentList(c *gin.Context) {
 			c.Abort()
 			return
 		}
-		responseCommentList[i] = CommentResponse{
+		newCommentResponse := CommentResponse{
 			ID:         commentList[i].ID,
 			Content:    commentList[i].Content,
 			CreateDate: commentList[i].CreatedAt.Format("01-02"), // mm-dd
@@ -192,6 +194,7 @@ func CommentList(c *gin.Context) {
 				IsFollow:      service.IsFollowing(userId, commentList[i].ID),
 			},
 		}
+		responseCommentList = append(responseCommentList, newCommentResponse)
 	}
 
 	c.JSON(http.StatusOK, CommentListResponse{
